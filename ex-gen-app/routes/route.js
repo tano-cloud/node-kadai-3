@@ -10,5 +10,4 @@ router.get('/start', userController.loadQuiz);
 
 router.post('/start', userController.startQuiz);
 
-
 module.exports = router;
