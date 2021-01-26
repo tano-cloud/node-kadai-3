@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>
+    <%= title%>
+  </title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    crossorigin="anonymous">
+</head>
+
+<body class="container">
+  <header style="margin-top: 10px" class="bg-white" style="width:100%;">
+    <h1>問題<%= firstContent%>
+    </h1>
+    <br>
+    <h2>[ジャンル] <%= secondContent%>
+    </h2>
+    <br>
+    <h2>[難易度]<%= thirdContent%>
+    </h2>
+  </header>
+
+  <main style="margin: 10px 0 10px 0 ;border: solid 1px #DFDFDF; ">
+    <div>
+      <%= fourthContent%>
+    </div>
+  </main>
+  <br>
+  <footer>
+    <form action="/start" method="POST">
+      <div>
+        <% for(let i in fiveContent) {%>
+          <% if(fiveContent[i] === sixContent) {%>
+            <button type="submit" name="button" value="true" style="margin-bottom: 10px">
+              <%= fiveContent[i]%>
+            </button><br>
+          <%} else{%>
+            <button type="submit" name="button" value="false" style="margin-bottom: 10px">
+                <%= fiveContent[i]%>
+            </button><br>
+          <% } %>
+        <% } %>
+      </div>
+  </footer>
+</body>
+
+</html>
