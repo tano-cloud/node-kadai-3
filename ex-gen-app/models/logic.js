@@ -4,14 +4,14 @@ const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
 
-class Quiz {
-    static dataArray = "";
-    static currentNum = 0;
-    static currentScore = 0;
+class QuizDataContainer {
+    static apiArrayData = "";
+    static apiArrayNumber = 0;
+    static quizScore = 0;
 }
 
-class FormattedData {
-    shuffleAnswer(arr) {
+class FormattedQuizData {
+    shuffleChoices(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [arr[j], arr[i]] = [arr[i], arr[j]]
@@ -19,49 +19,38 @@ class FormattedData {
         return arr;
     }
 
-    judgementAnswer(selectAnswer, currentNum, currentScore) {
-        if (selectAnswer === 'true') {
-            const Num = currentNum + 1
-            const Score = currentScore + 1
+    judgementChoice(choice, apiArrayNumber, quizScore) {
+        if (choice === 'true') {
+            const Num = apiArrayNumber + 1
+            const Score = quizScore + 1
 
-            Quiz.currentNum = Num;
-            Quiz.currentScore = Score;
+            QuizDataContainer.apiArrayNumber = Num;
+            QuizDataContainer.quizScore = Score;
             return [Num, Score]
         }
         else {
-            const Num = currentNum + 1
-            const Score = currentScore
-            Quiz.currentNum = Num;
-            Quiz.currentScore = Score;
+            const Num = apiArrayNumber + 1
+            const Score = quizScore
+            QuizDataContainer.apiArrayNumber = Num;
+            QuizDataContainer.quizScore = Score;
             return [Num, Score]
         }
     }
 
-    displayData(dataArray, currentNum) {
-        const dataNumber = dataArray[currentNum];
-        //問題〇
-        const number = `<h1>問題${currentNum + 1}</h1>`;
+    giveQuiz(apiArrayData, apiArrayNumber) {
+        const quizData = apiArrayData[apiArrayNumber];
+        //問題の番号
+        const numberQuestion = apiArrayNumber + 1;
         //ジャンル
-        const category = '<h2>[ジャンル] ' + dataNumber['category'] + '</h2>';
+        const category = quizData['category'];
         //難易度
-        const difficulty = '<h2>[難易度] ' + dataNumber['difficulty'] + '</h2>';
+        const difficulty = quizData['difficulty'];
         //問題文
-        const question = '<div>' + dataNumber['question'] + '</div>';
+        const contentQuestion = quizData['question'];
         //4択の回答をシャッフル
-        const quizSet = this.shuffleAnswer([
-            ...dataNumber['incorrect_answers'], dataNumber['correct_answer']]);
-        //４択の回答
-        let quizSet_list = '<form action="/start" method="POST"><div>'
-        for (let i = 0; i < quizSet.length; i++) {
-            if (quizSet[i] === dataNumber['correct_answer']) {
-                quizSet_list += `<button type="submit" name="button" value="true" style="margin-bottom: 10px">${quizSet[i]}</button><br>`
-            }
-            else {
-                quizSet_list += `<button type="submit" name="button" value="false" style="margin-bottom: 10px">${quizSet[i]}</button><br>`
-            }
-        }
-        quizSet_list += '</div></form>'
-        return [number + '<br>' + category + difficulty + '<br>', question, quizSet_list]
+        const quizSet = this.shuffleChoices([
+            ...quizData['incorrect_answers'], quizData['correct_answer']]);
+        return [numberQuestion, category, difficulty, contentQuestion, quizSet, quizData['correct_answer']]
     }
 }
 
@@ -86,21 +75,24 @@ module.exports = {
                 if (resp.ok) {
                     resp.json().then(data => {
 
-                        let data_list = []
+                        let dataList = []
                         for (let i = 0; i < data['results'].length; i++) {
-                            data_list.push(data['results'][i])
+                            dataList.push(data['results'][i])
                         }
 
-                        Quiz.dataArray = data_list;
-                        const formattedData = new FormattedData();
-                        const displayData = formattedData.displayData(Quiz.dataArray, 0)
-                        const data_obj = {
+                        QuizDataContainer.apiArrayData = dataList;
+                        const formattedQuizData = new FormattedQuizData();
+                        const giveQuiz = formattedQuizData.giveQuiz(QuizDataContainer.apiArrayData, 0)
+                        const dataObj = {
                             title: 'startQuiz',
-                            content_top: displayData[0],
-                            content_middle: displayData[1],
-                            content_bottom: displayData[2],
+                            firstContent: giveQuiz[0],
+                            secondContent: giveQuiz[1],
+                            thirdContent: giveQuiz[2],
+                            fourthContent: giveQuiz[3],
+                            fiveContent: giveQuiz[4],
+                            sixContent: giveQuiz[5]
                         }
-                        resolve(data_obj)
+                        resolve(dataObj)
                     });
                 } else {
                     console.error('通信エラー')
@@ -111,31 +103,34 @@ module.exports = {
 
     startQuiz: (req) => {
         return new Promise((resolve, reject) => {
-            const formattedData = new FormattedData();
-            const judgementData = formattedData.judgementAnswer(req, Quiz.currentNum, Quiz.currentScore)
+            const formattedQuizData = new FormattedQuizData();
+            const judgementData = formattedQuizData.judgementChoice(req, QuizDataContainer.apiArrayNumber, QuizDataContainer.quizScore)
 
             if (judgementData[0] === 10) {
-                Quiz.currentNum = 0;
-                Quiz.currentScore = 0;
-                const data_obj = {
+                QuizDataContainer.apiArrayNumber = 0;
+                QuizDataContainer.quizScore = 0;
+                const dataObj = {
                     title: 'finish',
-                    content_top: `<h2>あなたの正答数は${judgementData[1]}です！！</h2>`,
-                    content_middle: '再度チャレンジしたい場合は以下をクリック！！',
-                    content_bottom: '<a  href="/" style="border: solid 1px black; padding: 5px; color:black; background-color:#EFEFEF; text-decoration:none" ;type="button">ホームに戻る</a>'
+                    topContent: judgementData[1],
+                    middleContent: '再度チャレンジしたい場合は以下をクリック！！',
+                    bottomContent: 'ホームに戻る',
+                    judge: 1,
                 }
-                resolve(data_obj)
+                resolve(dataObj)
                 return
             }
-            
-                const displayData = formattedData.displayData(Quiz.dataArray, judgementData[0])
-                const data_obj = {
+                const giveQuiz = formattedQuizData.giveQuiz(QuizDataContainer.apiArrayData, judgementData[0])
+                const dataObj = {
                     title: 'startQuiz',
-                    content_top: displayData[0],
-                    content_middle: displayData[1],
-                    content_bottom: displayData[2],
+                    firstContent: giveQuiz[0],
+                    secondContent: giveQuiz[1],
+                    thirdContent: giveQuiz[2],
+                    fourthContent: giveQuiz[3],
+                    fiveContent: giveQuiz[4],
+                    sixContent: giveQuiz[5],
+                    judge: 0,
                 }
-                resolve(data_obj)
-            
+                resolve(dataObj)
         })
     },
 }

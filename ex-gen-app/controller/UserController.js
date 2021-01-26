@@ -18,14 +18,18 @@ module.exports = {
     },
 
     loadQuiz: (req, res, next) => {
-        logic.loadQuiz().then((data_obj, id)=>{
-            res.render(viewUsers + 'start', data_obj);
+        logic.loadQuiz().then((dataObj)=>{
+            res.render(viewUsers + 'start', dataObj);
         });
     },
 
     startQuiz: (req, res, next) => {
-        logic.startQuiz(req.body.button).then((data_obj)=>{
-            res.render(viewUsers + 'start', data_obj);
+        logic.startQuiz(req.body.button).then((dataObj)=>{
+            console.log(dataObj.judge)
+            if(dataObj.judge === 1){
+                res.render(viewUsers + 'results', dataObj);
+            }
+            res.render(viewUsers + 'start', dataObj);
         });
     },
 }

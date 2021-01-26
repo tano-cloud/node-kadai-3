@@ -12,15 +12,37 @@
 
 <body class="container">
   <header style="margin-top: 10px" class="bg-white" style="width:100%;">
-    <%- content_top%>
+    <h1>問題<%= firstContent%>
+    </h1>
+    <br>
+    <h2>[ジャンル] <%= secondContent%>
+    </h2>
+    <br>
+    <h2>[難易度]<%= thirdContent%>
+    </h2>
   </header>
 
   <main style="margin: 10px 0 10px 0 ;border: solid 1px #DFDFDF; ">
-  <%- content_middle%>
+    <div>
+      <%= fourthContent%>
+    </div>
   </main>
   <br>
   <footer>
-    <%- content_bottom%>
+    <form action="/start" method="POST">
+      <div>
+        <% for(let i in fiveContent) {%>
+          <% if(fiveContent[i] === sixContent) {%>
+            <button type="submit" name="button" value="true" style="margin-bottom: 10px">
+              <%= fiveContent[i]%>
+            </button><br>
+          <%} else{%>
+            <button type="submit" name="button" value="false" style="margin-bottom: 10px">
+                <%= fiveContent[i]%>
+            </button><br>
+          <% } %>
+        <% } %>
+      </div>
   </footer>
 </body>
 
